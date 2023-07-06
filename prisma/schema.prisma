@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model blog {
+  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title       String       @db.VarChar(255)
+  content     String
+  job_hire_id String?      @db.Uuid
+  created_at  DateTime     @default(now()) @db.Timestamp(6)
+  updated_at  DateTime     @default(now()) @db.Timestamp(6)
+  job_hire    job_hire?    @relation(fields: [job_hire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subscriber  subscriber[]
+}
+
+model job_hire {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description String?   @db.VarChar(255)
+  image       String?   @db.VarChar(255)
+  name        String    @db.VarChar(255)
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @default(now()) @db.Timestamp(6)
+  user_id     String    @db.Uuid
+  tenant_id   String    @db.VarChar(255)
+  blog        blog[]
+  user        user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  project     project[]
+}
+
+model project {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String    @db.VarChar(255)
+  description String
+  link        String    @db.VarChar(255)
+  job_hire_id String?   @db.Uuid
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @default(now()) @db.Timestamp(6)
+  job_hire    job_hire? @relation(fields: [job_hire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model subscriber {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id    String?  @db.Uuid
+  blog_id    String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  blog       blog?    @relation(fields: [blog_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       user?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String       @unique @db.VarChar(255)
+  firstName   String?      @db.VarChar(255)
+  lastName    String?      @db.VarChar(255)
+  roq_user_id String       @db.VarChar(255)
+  tenant_id   String       @db.VarChar(255)
+  created_at  DateTime     @default(now()) @db.Timestamp(6)
+  updated_at  DateTime     @default(now()) @db.Timestamp(6)
+  job_hire    job_hire[]
+  subscriber  subscriber[]
+}
